@@ -28,7 +28,7 @@ def main(args):
         'duplicated': duplicate_alignments
     }
     write_stats(
-        alignments_processed, 
+        alignment_stats, 
         args.outprefix + '.duplicatestats.tsv'
     )
     logging.info('now writing pairs for all found sizes')
