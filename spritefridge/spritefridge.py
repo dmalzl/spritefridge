@@ -1,4 +1,3 @@
-from .cli import parse_args
 from .extractbc import extract_barcodes, add_extractbc
 from .combine import combine_coolers, add_combine
 from .annotate import annotate_coolers, add_annotate
