@@ -5,7 +5,7 @@ from .core import annotate_bins
 from .ioutils import create_annotated_cooler
 
 
-def annotate_cool(coolpath, bedpath, outfile):
+def annotate_cool(coolpath, bedpath, outfile, mcoolfile = False):
     cooler = Cooler(coolpath)
 
     logging.info(f'annotating bins of {coolpath} with clusters from {bedpath}')
@@ -16,7 +16,8 @@ def annotate_cool(coolpath, bedpath, outfile):
         coolpath,
         outfile,
         annotated_bins,
-        cooler.chromnames
+        cooler.chromnames,
+        mcoolfile = mcoolfile
     )
 
 
@@ -27,7 +28,8 @@ def annotate_mcool(mcoolpath, bedpath, outfile):
         annotate_cool(
             uri,
             bedpath,
-            outuri
+            outuri,
+            mcoolfile = True
         )
 
 

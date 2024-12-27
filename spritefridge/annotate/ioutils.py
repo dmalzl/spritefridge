@@ -41,11 +41,28 @@ def read_bed_by_chrom(bedfile):
             linebuffer.append(line)
 
 
-def create_annotated_cooler(source, dest, bins, chromnames, h5opts = None):
+def get_h5_group(h5, key_sequence):
+    grp = h5
+    for key in key_sequence:
+        grp = grp[key]
+    
+    return grp
+
+
+def create_annotated_cooler(source, dest, bins, chromnames, h5opts = None, mcoolfile = True):
     fileops.cp(source, dest)
-    h5 = h5py.File(dest, 'a')
-    del h5['/']['bins']
-    grp = h5['/'].create_group('bins')
+    keys = ['/']
+    ofile = dest
+
+    if mcoolfile:
+        ofile, keystring = dest.split('::')
+        keys.extend(keystring[1:].split('/'))
+        
+    h5 = h5py.File(ofile, 'a')
+    rootgrp = get_h5_group(h5, keys)
+    del rootgrp['bins']
+    
+    grp = rootgrp.create_group('bins')
     h5opts = create._create._set_h5opts(h5opts)
     create._create.write_bins(
         grp,
