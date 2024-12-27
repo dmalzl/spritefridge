@@ -39,11 +39,10 @@ requires-python = ">=3.10"
 spritefridge = 'spritefridge.spritefridge:main'
 
 [project.urls]
-Homepage = "https://github.com/dmalzl/comotate"
+Homepage = "https://github.com/dmalzl/spritefridge"
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-include = ["comotate*"]
-exclude = ["coolers*"]
+include = ["spritefridge*"]
