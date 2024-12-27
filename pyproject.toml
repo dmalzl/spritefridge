@@ -1,0 +1,49 @@
+# pyproject.toml
+
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spritefridge"
+version = "1.0.0"
+description = "A python toolbox for processing SPRITE-seq within the cooler universe"
+readme = "README.md"
+authors = [{ name = "Daniel Malzl", email = "daniel@menchelab.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = [
+    'bioinformatics',
+    'SPRITE sequencing',
+    'sequencing',
+    'NGS',
+    'cooler',
+    'barcode extraction',
+    'pairs file generation',
+    '4DN',
+    '3D genome'
+]
+dependencies = [
+    'cooler >= 0.10.2',
+    'pybedtools >= 0.10.0',
+    'regex >= 2024.11.6',
+    'pysam >= 0.22.1'
+]
+requires-python = ">=3.10"
+
+[project.scripts]
+spritefridge = 'spritefridge.spritefridge:main'
+
+[project.urls]
+Homepage = "https://github.com/dmalzl/comotate"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["comotate*"]
+exclude = ["coolers*"]
