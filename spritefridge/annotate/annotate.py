@@ -34,9 +34,11 @@ def annotate_mcool(mcoolpath, bedpath, outfile):
 def main(args):
     for coolpath in args.input:
         if fileops.is_multires_file(coolpath):
+            logging.info('annotating multires cooler')
             outfile = coolpath.replace('mcool', 'annotated.mcool')
             annotate_mcool(coolpath, args.bed, outfile)
 
         else:
+            logging.info('annotating single cooler')
             outfile = coolpath.replace('.cool', '.annotated.cool')
             annotate_cool(coolpath, args.bed, outfile)
