@@ -38,6 +38,6 @@ def annotate_bins(cool, clusterbedfile):
         on = ['chrom', 'start', 'end'], 
         how = 'left'
     )
-    annotated_bins.clusters.fillna('None', inplace = True)
+    annotated_bins.fillna({'clusters': 'None'}, inplace = True)
     sanitize_dtypes(annotated_bins)
     return annotated_bins
