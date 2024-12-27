@@ -2,6 +2,8 @@ from cooler import fileops, create
 
 import h5py
 
+import pandas as pd
+
 
 def to_right_dtype(x):
     try:
