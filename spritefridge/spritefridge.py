@@ -2,6 +2,7 @@ from .extractbc import extract_barcodes, add_extractbc
 from .combine import combine_coolers, add_combine
 from .annotate import annotate_coolers, add_annotate
 from .pairs import make_pairs, add_pairs
+from .balance import balance_mcool, add_balance
 
 import logging
 
@@ -18,7 +19,8 @@ cmds = {
     'combine': combine_coolers,
     'annotate': annotate_coolers,
     'extractbc': extract_barcodes,
-    'pairs': make_pairs
+    'pairs': make_pairs,
+    'balance': balance_mcool
 }
 
 
@@ -29,6 +31,7 @@ def parse_args():
     add_annotate(sub)
     add_extractbc(sub)
     add_pairs(sub)
+    add_balance(sub)
     return parser.parse_args()
 
 

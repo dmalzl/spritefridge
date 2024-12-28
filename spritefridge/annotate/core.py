@@ -3,6 +3,8 @@ from .ioutils import read_bed_by_chrom
 
 import pandas as pd
 
+import os
+
 
 def sanitize_dtypes(annotated_bins):
     annotated_bins['chrom'] = annotated_bins.chrom.astype('category')
@@ -29,8 +31,9 @@ def annotate_bins(cool, clusterbedfile):
         )
     
     tmp_annotation = pd.concat(annotated_bins)
+    colname = os.path.basename(clusterbedfile)
     tmp_annotation.rename(
-        columns = {'thickEnd': 'clusters'},
+        columns = {'thickEnd': colname},
         inplace = True
     )
     annotated_bins = cool.bins()[:].merge(
@@ -38,6 +41,6 @@ def annotate_bins(cool, clusterbedfile):
         on = ['chrom', 'start', 'end'], 
         how = 'left'
     )
-    annotated_bins.fillna({'clusters': 'None'}, inplace = True)
+    annotated_bins.fillna({colname: 'None'}, inplace = True)
     sanitize_dtypes(annotated_bins)
     return annotated_bins

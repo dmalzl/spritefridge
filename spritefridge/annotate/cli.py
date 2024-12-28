@@ -16,10 +16,10 @@ def add_annotate(subparser):
     parser.add_argument(
         '--bed',
         '-b',
+        nargs = '+',
         help = '''
-        BEDfiles containing all valid SPRITE reads annotated with their cluster membership. 
-        must be sorted by chrom, start
-        ''',
-        required = True
+        one or more BEDfiles containing all valid SPRITE reads annotated with their cluster membership. 
+        must be sorted by chrom, start. annotation columns will be named after bed basenames
+        '''
     )
     
