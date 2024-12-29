@@ -36,7 +36,8 @@ def annotate_bins(cool, clusterbedfile):
         columns = {'thickEnd': colname},
         inplace = True
     )
-    annotated_bins = cool.bins()[:].merge(
+    bins = cool.bins()[:].loc[:, ['chrom', 'start', 'end']]
+    annotated_bins = bins.merge(
         tmp_annotation, 
         on = ['chrom', 'start', 'end'], 
         how = 'left'

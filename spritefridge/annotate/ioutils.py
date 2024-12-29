@@ -57,7 +57,7 @@ def write_annotation(grp, name, data, h5opts):
 
 
 def copy_and_annotate_cooler(source, dest, annotations, h5opts = None, mcoolfile = True):
-    fileops.cp(source, dest, overwrite = True)
+    fileops.cp(source, dest)
     keys = ['/']
     ofile = dest
 
