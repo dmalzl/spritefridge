@@ -6,7 +6,6 @@ import multiprocessing as mp
 
 from krbalancing import *
 from .ioutils import cooler_to_csr
-from cooler import ice
 
 
 def remove_nan_bin_weights(csrmatrix, weights):
@@ -89,7 +88,7 @@ def balance_ic(cooleruri, nproc, per_chrom):
         else:
             map_ = map
 
-        bias, stats = ice.iterative_correction(
+        bias, stats = cooler.balance_cooler(
             clr,
             chunksize=int(10e6),
             cis_only=per_chrom,
@@ -106,12 +105,16 @@ def balance_ic(cooleruri, nproc, per_chrom):
             map=map_
         )
 
+        print(stats)
+
     finally:
         if nproc > 1:
             pool.close()
 
-    if not stats['converged']:
+    # per chrom returns a bool for each balanced chrom
+    converged = stats['converged'] if not per_chrom else stats['converged'].all()
+    if not converged:
         logging.error('Iteration limit reached without convergence')
         logging.error('Storing final result. Check log to assess convergence.')
 
-    return bias
+    return bias, stats

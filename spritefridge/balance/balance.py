@@ -16,11 +16,11 @@ def main(args):
         cooleruri = args.mcool + '::resolutions/' + resolution
 
         for weight_name, per_chrom, balancetype in zip(
-            ['weight', 'perChromKR'],
+            ['KR', 'perChromKR'],
             [False, True],
             ['genomewide', 'per chromosome']
         ):
-            if not check_weight(cooleruri, weight_name):
+            if not check_weight(cooleruri, weight_name) or args.overwrite:
                 logging.info(
                     'applying {} KR to {}::resolution/{}'.format(
                         balancetype, 
@@ -35,7 +35,8 @@ def main(args):
                 store_weights(
                     cooleruri, 
                     krweights, 
-                    weight_name
+                    weight_name,
+                    overwrite = args.overwrite
                 )
                 del krweights
 
@@ -53,7 +54,7 @@ def main(args):
             [False, True], 
             ['genomewide', 'per chromosome']
         ):
-            if not check_weight(cooleruri, weight_name):
+            if not check_weight(cooleruri, weight_name) or args.overwrite:
                 logging.info(
                     'applying {} IC to {}::resolution/{}'.format(
                         balancetype, 
@@ -61,7 +62,7 @@ def main(args):
                         resolution
                     )
                 )
-                icweights = balance_ic(
+                icweights, stats = balance_ic(
                     cooleruri, 
                     args.processors, 
                     per_chrom
@@ -69,7 +70,9 @@ def main(args):
                 store_weights(
                     cooleruri, 
                     icweights, 
-                    weight_name
+                    weight_name,
+                    stats,
+                    overwrite = args.overwrite
                 )
                 del icweights
 

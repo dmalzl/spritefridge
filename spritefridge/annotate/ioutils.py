@@ -49,8 +49,15 @@ def get_h5_group(h5, key_sequence):
     return grp
 
 
-def create_annotated_cooler(source, dest, bins, chromnames, h5opts = None, mcoolfile = True):
-    fileops.cp(source, dest)
+def write_annotation(grp, name, data, h5opts):
+    if name in grp:
+        del grp[name]
+    
+    grp.create_dataset(name, data=data, **h5opts)
+
+
+def copy_and_annotate_cooler(source, dest, annotations, h5opts = None, mcoolfile = True):
+    fileops.cp(source, dest, overwrite = True)
     keys = ['/']
     ofile = dest
 
@@ -58,16 +65,10 @@ def create_annotated_cooler(source, dest, bins, chromnames, h5opts = None, mcool
         ofile, keystring = dest.split('::')
         keys.extend(keystring[1:].split('/'))
         
-    h5 = h5py.File(ofile, 'a')
-    rootgrp = get_h5_group(h5, keys)
-    del rootgrp['bins']
-    
-    grp = rootgrp.create_group('bins')
-    h5opts = create._create._set_h5opts(h5opts)
-    create._create.write_bins(
-        grp,
-        bins,
-        chromnames,
-        h5opts
-    )
+    with h5py.File(ofile, 'r+') as h5:
+        rootgrp = get_h5_group(h5, keys)
+        grp = rootgrp['bins']
+        h5opts = create._create._set_h5opts(h5opts)
+        for col in annotations.columns:
+            write_annotation(grp, col, annotations[col].values, h5opts)
     

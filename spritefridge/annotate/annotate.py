@@ -4,7 +4,7 @@ import pandas as pd
 
 from cooler import Cooler, fileops
 from .core import annotate_bins
-from .ioutils import create_annotated_cooler
+from .ioutils import copy_and_annotate_cooler
 
 
 def annotate_cool(coolpath, bedpaths, outfile, mcoolfile = False):
@@ -14,8 +14,8 @@ def annotate_cool(coolpath, bedpaths, outfile, mcoolfile = False):
     for bedpath in bedpaths:
         logging.info(f'annotating bins of {coolpath} with clusters from {bedpath}')
         tmp = annotate_bins(cooler, bedpath)
-        if annotate_bins.empty:
-            annotate_bins = tmp
+        if annotated_bins.empty:
+            annotated_bins = tmp
             continue
 
         annotated_bins = annotated_bins.merge(
@@ -24,12 +24,15 @@ def annotate_cool(coolpath, bedpaths, outfile, mcoolfile = False):
             how = 'left'
         )
 
+    annotated_bins.drop(
+        columns = ['chrom', 'start', 'end'],
+        inplace = True
+    )
     logging.info(f'writing annotated data to {outfile}')
-    create_annotated_cooler(
+    copy_and_annotate_cooler(
         coolpath,
         outfile,
         annotated_bins,
-        cooler.chromnames,
         mcoolfile = mcoolfile
     )
 

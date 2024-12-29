@@ -16,3 +16,9 @@ def add_balance(subparser):
         type = int,
         help = 'number of processors to use for IC balancing'
     )
+    parser.add_argument(
+        '--overwrite',
+        help = 'if set overwrites existing weight columns',
+        default = False,
+        action = 'store_true'
+    )

@@ -6,9 +6,9 @@ import pandas as pd
 import os
 
 
-def sanitize_dtypes(annotated_bins):
-    annotated_bins['chrom'] = annotated_bins.chrom.astype('category')
-    annotated_bins['clusters'] = annotated_bins.clusters.astype('bytes')
+def sanitize_dtypes(df, dtypes):
+    for col, dtype in dtypes.items():
+        df[col] = df[col].astype(dtype)
 
 
 def annotate_bins(cool, clusterbedfile):
@@ -20,7 +20,7 @@ def annotate_bins(cool, clusterbedfile):
             continue
         
         lo, hi = cool.extent(chrom)
-        chrom_bins = cool.bins()[lo:hi]
+        chrom_bins = cool.bins()[lo:hi].loc[:, ['chrom', 'start', 'end']]
         chrom_bins['name'] = 'bin'
         a = BedTool.from_dataframe(chrom_bed)
         b = BedTool.from_dataframe(chrom_bins)
@@ -42,5 +42,11 @@ def annotate_bins(cool, clusterbedfile):
         how = 'left'
     )
     annotated_bins.fillna({colname: 'None'}, inplace = True)
-    sanitize_dtypes(annotated_bins)
+    sanitize_dtypes(
+        annotated_bins,
+        {
+            'chrom': 'category',
+            colname: 'bytes'
+        }
+    )
     return annotated_bins

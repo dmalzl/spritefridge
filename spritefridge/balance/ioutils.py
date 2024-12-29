@@ -28,7 +28,7 @@ def check_weight(cooleruri, weight_name):
     return weight_exists
 
 
-def store_weights(cooleruri, bias, weightname):
+def store_weights(cooleruri, bias, weightname, stats = False, overwrite = False):
     '''
     stores an iterable of values as a new weight column in the given cooleruri
     with name set to wightname. code taken from cooler's cooler balance see also
@@ -45,7 +45,14 @@ def store_weights(cooleruri, bias, weightname):
         grp = h5[group_path]
         # add the bias column to the file
         h5opts = dict(compression='gzip', compression_opts=6)
+        if overwrite and weightname in grp['bins']:
+            del grp['bins'][weightname]
+            
         grp['bins'].create_dataset(weightname, data=bias, **h5opts)
+
+        if stats:
+            grp["bins"][weightname].attrs.update(stats)
+            
 
 
 def get_resolutons(coolerpath):
@@ -132,8 +139,8 @@ def cooler_to_csr(cooleruri):
     matrix = csr_matrix(
         (data, (instances, features)),
         shape = (
-            np.int(cooler_file.info['nbins']), 
-            np.int(cooler_file.info['nbins'])
+            used_dtype(cooler_file.info['nbins']), 
+            used_dtype(cooler_file.info['nbins'])
         ), 
         dtype = count_dtype
     )
