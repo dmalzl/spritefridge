@@ -17,6 +17,12 @@ def add_balance(subparser):
         help = 'number of processors to use for IC balancing'
     )
     parser.add_argument(
+        '--output',
+        '-o',
+        required = True,
+        help = 'name of the output mcool file. input is copied there and appended with the weights'
+    )
+    parser.add_argument(
         '--overwrite',
         help = 'if set overwrites existing weight columns',
         default = False,
