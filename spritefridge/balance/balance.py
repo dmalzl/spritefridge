@@ -65,7 +65,8 @@ def main(args):
                 icweights, stats = balance_ic(
                     cooleruri, 
                     args.processors, 
-                    per_chrom
+                    per_chrom,
+                    maxiter = args.maxiter
                 )
                 store_weights(
                     cooleruri, 

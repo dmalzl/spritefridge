@@ -70,7 +70,7 @@ def balance_kr(cooleruri, per_chrom = False):
     return remove_nan_bin_weights(csrmatrix, weights)
 
 
-def balance_ic(cooleruri, nproc, per_chrom):
+def balance_ic(cooleruri, nproc, per_chrom, maxiter):
     '''
     applies IC matrix balancing to a given cooleruri
     code taken from cooler's cooler balance see also
@@ -98,7 +98,7 @@ def balance_ic(cooleruri, nproc, per_chrom):
             min_count=0,
             blacklist=None,
             mad_max=5,
-            max_iters=500,
+            max_iters=maxiter,
             ignore_diags=2,
             rescale_marginals=True,
             use_lock=False,

@@ -22,3 +22,8 @@ def add_balance(subparser):
         default = False,
         action = 'store_true'
     )
+    parser.add_argument(
+        '--maxiter',
+        default = 1000,
+        help = 'maximum iterations for ICE algorithm'
+    )
