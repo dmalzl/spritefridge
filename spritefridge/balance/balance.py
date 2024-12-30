@@ -10,77 +10,46 @@ from .core import (
     balance_ic,
     balance_kr
 )
+from cooler import fileops
 
 def main(args):
     for resolution in get_resolutons(args.mcool):
-        cooleruri = args.mcool + '::resolutions/' + resolution
+        cooleruri = args.mcool + '::/resolutions/' + resolution
+        outuri = args.output + '::/resolutions/' + resolution
+        fileops.cp(cooleruri, outuri)
 
-        for weight_name, per_chrom, balancetype in zip(
-            ['KR', 'perChromKR'],
-            [False, True],
-            ['genomewide', 'per chromosome']
+        for weight_name, per_chrom, balancefunc in zip(
+            ['KR', 'perChromKR', 'ICE', 'perChromIC'],
+            [False, True, False, True],
+            [balance_kr, balance_kr, balance_ic, balance_ic]
         ):
             if not check_weight(cooleruri, weight_name) or args.overwrite:
                 logging.info(
-                    'applying {} KR to {}::resolution/{}'.format(
-                        balancetype, 
+                    'computing {} for {}::/resolution/{}'.format(
+                        weight_name, 
                         args.mcool, 
                         resolution
                     )
                 )
-                krweights = balance_kr(
-                    cooleruri, 
-                    per_chrom
-                )
-                store_weights(
-                    cooleruri, 
-                    krweights, 
-                    weight_name,
-                    overwrite = args.overwrite
-                )
-                del krweights
-
-            else:
-                logging.info(
-                    '{} KR weights for {}::resolution/{} already exist. Skipping!'.format(
-                        balancetype, 
-                        args.mcool, 
-                        resolution
-                    )
-                )
-
-        for weight_name, per_chrom, balancetype in zip(
-            ['ICE', 'perChromIC'], 
-            [False, True], 
-            ['genomewide', 'per chromosome']
-        ):
-            if not check_weight(cooleruri, weight_name) or args.overwrite:
-                logging.info(
-                    'applying {} IC to {}::resolution/{}'.format(
-                        balancetype, 
-                        args.mcool, 
-                        resolution
-                    )
-                )
-                icweights, stats = balance_ic(
-                    cooleruri, 
-                    args.processors, 
+                weights, stats = balancefunc(
+                    outuri, 
                     per_chrom,
+                    nproc = args.nproc,
                     maxiter = args.maxiter
                 )
                 store_weights(
-                    cooleruri, 
-                    icweights, 
+                    outuri, 
+                    weights, 
                     weight_name,
                     stats,
                     overwrite = args.overwrite
                 )
-                del icweights
+                del weights
 
             else:
                 logging.info(
-                    '{} IC weights for {}::resolution/{} already exist. Skipping!'.format(
-                        balancetype, 
+                    '{} weights for {}::resolution/{} already exist. Skipping!'.format(
+                        weight_name, 
                         args.mcool, 
                         resolution
                     )

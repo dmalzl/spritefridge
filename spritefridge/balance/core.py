@@ -24,7 +24,7 @@ def remove_nan_bin_weights(csrmatrix, weights):
     return weights
 
 
-def balance_kr(cooleruri, per_chrom = False):
+def balance_kr(cooleruri, per_chrom = False, **kwargs):
     '''
     applies KR matrix balancing to the given cooleruri
     code taken from HiCExplorer's hicCorrectMatrix see also
@@ -67,10 +67,10 @@ def balance_kr(cooleruri, per_chrom = False):
             chromweights = apply_kr(chromcsr)
             weights = np.concatenate([weights, np.array(chromweights).flatten()])
 
-    return remove_nan_bin_weights(csrmatrix, weights)
+    return remove_nan_bin_weights(csrmatrix, weights), {'divisive_weights': False}
 
 
-def balance_ic(cooleruri, nproc, per_chrom, maxiter):
+def balance_ic(cooleruri, per_chrom, nproc, maxiter):
     '''
     applies IC matrix balancing to a given cooleruri
     code taken from cooler's cooler balance see also
