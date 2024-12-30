@@ -105,8 +105,6 @@ def balance_ic(cooleruri, nproc, per_chrom, maxiter):
             map=map_
         )
 
-        print(stats)
-
     finally:
         if nproc > 1:
             pool.close()
