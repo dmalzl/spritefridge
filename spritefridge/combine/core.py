@@ -49,12 +49,8 @@ def merge_pixels(coolers, rowlo, rowhi, collo, colhi, round_floats):
 
 
 def get_nbins(coolers):
-    if isinstance(coolers, dict):
-        key = np.random.choice(list(coolers.keys()))
-        cool = coolers[key]
-
-    cool = coolers
-    return cool.info['nbins']
+    key = np.random.choice(list(coolers.keys()))
+    return coolers[key].info['nbins']
 
 
 def chunked_pixels_iterator(pixels_selector, coolers, nchunks = 100, round_floats = True):
