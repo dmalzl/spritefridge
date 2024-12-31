@@ -34,7 +34,7 @@ def main(args):
                 weights, stats = balancefunc(
                     outuri, 
                     per_chrom,
-                    nproc = args.nproc,
+                    nproc = args.processors,
                     maxiter = args.maxiter
                 )
                 store_weights(
