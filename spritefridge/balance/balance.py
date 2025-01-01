@@ -4,7 +4,8 @@ import gc
 from .ioutils import (
     get_resolutons,
     check_weight,
-    store_weights
+    store_weights,
+    copy_attrs
 )
 from .core import (
     balance_ic,
@@ -13,9 +14,9 @@ from .core import (
 from cooler import fileops
 
 def main(args):
-    for resolution in get_resolutons(args.mcool):
-        cooleruri = args.mcool + '::/resolutions/' + resolution
-        outuri = args.output + '::/resolutions/' + resolution
+    for coolpath in fileops.list_coolers(args.mcool):
+        cooleruri = args.mcool + '::' + coolpath
+        outuri = args.output + '::' + coolpath
         fileops.cp(cooleruri, outuri)
 
         for weight_name, per_chrom, balancefunc in zip(
@@ -25,10 +26,10 @@ def main(args):
         ):
             if not check_weight(cooleruri, weight_name) or args.overwrite:
                 logging.info(
-                    'computing {} for {}::/resolution/{}'.format(
+                    'computing {} for {}::{}'.format(
                         weight_name, 
                         args.mcool, 
-                        resolution
+                        coolpath
                     )
                 )
                 weights, stats = balancefunc(
@@ -48,11 +49,13 @@ def main(args):
 
             else:
                 logging.info(
-                    '{} weights for {}::resolution/{} already exist. Skipping!'.format(
+                    '{} weights for {}::{} already exist. Skipping!'.format(
                         weight_name, 
                         args.mcool, 
-                        resolution
+                        coolpath
                     )
                 )
 
         gc.collect()
+
+    copy_attrs(args.mcool, args.output)

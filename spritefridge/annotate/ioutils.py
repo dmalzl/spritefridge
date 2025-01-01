@@ -5,6 +5,24 @@ import h5py
 import pandas as pd
 
 
+def attrs_to_dict(h5file):
+    attrs = {
+        key: h5file.attrs[key]
+        for key
+        in h5file.attrs.keys()
+    }
+    return attrs
+
+
+def copy_attrs(source, dest):
+    with (
+        h5py.File(source, 'r+') as infile,
+        h5py.File(dest, 'r+') as ofile
+    ):
+        attrs = attrs_to_dict(infile)
+        ofile.attrs.update(attrs)
+
+
 def to_right_dtype(x):
     try:
         return int(x)

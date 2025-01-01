@@ -8,6 +8,24 @@ from scipy.sparse import csr_matrix, triu, tril
 from cooler.util import parse_cooler_uri
 
 
+def attrs_to_dict(h5file):
+    attrs = {
+        key: h5file.attrs[key]
+        for key
+        in h5file.attrs.keys()
+    }
+    return attrs
+
+
+def copy_attrs(source, dest):
+    with (
+        h5py.File(source, 'r+') as infile,
+        h5py.File(dest, 'r+') as ofile
+    ):
+        attrs = attrs_to_dict(infile)
+        ofile.attrs.update(attrs)
+
+
 def check_weight(cooleruri, weight_name):
     '''
     checks if weight_name already exist in cooler file

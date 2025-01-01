@@ -4,7 +4,7 @@ import pandas as pd
 
 from cooler import Cooler, fileops
 from .core import annotate_bins
-from .ioutils import copy_and_annotate_cooler
+from .ioutils import copy_and_annotate_cooler, copy_attrs
 
 
 def annotate_cool(coolpath, bedpaths, outfile, mcoolfile = False):
@@ -47,6 +47,8 @@ def annotate_mcool(mcoolpath, bedpaths, outfile):
             outuri,
             mcoolfile = True
         )
+    
+    copy_attrs(mcoolpath, outfile)
 
 
 def main(args):
