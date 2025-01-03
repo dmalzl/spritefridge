@@ -75,10 +75,10 @@ def clusters_to_pairs(clusters, fileprefix, min_c_size, max_c_size):
     sized_clusters = clusters_by_size(clusters)
     stats = {}
     for size, clusters_of_size in sized_clusters.items():
+        stats[size] = len(clusters_of_size)
         if size < min_c_size or size > max_c_size:
             continue
         
-        stats[size] = len(clusters_of_size)
         write_pairs(
             clusters_of_size, 
             f'{fileprefix}_{size}.pairs',

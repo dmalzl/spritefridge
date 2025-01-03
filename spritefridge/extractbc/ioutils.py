@@ -156,10 +156,9 @@ def read_barcodes(barcodes_path, allowed_mismatches):
 
 
 def write_stats(stats_dict, statsfile):
-    keys = stats_dict.keys()
     with open(statsfile, 'w') as file:
-        file.write('\t'.join([f'nbcs_{k}' for k in keys]) + '\n')
-        file.write('\t'.join(str(stats_dict[k]) for k in keys) + '\n')
+        for i, count in stats_dict.items():
+            file.write(f'{i}_barcodes\t{count}' + '\n')
 
 
 def write_parallel(
