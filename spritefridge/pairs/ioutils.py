@@ -97,7 +97,6 @@ def clusters_to_pairs(clusters, fileprefix, min_c_size, max_c_size):
 
 def write_stats(stats, filename):
     with open(filename, 'w') as file:
-        file.write('clustersize\tnumber_of_clusters\n')
         for size, num in stats.items():
             file.write(
                 f'{size}\t{num}\n'
