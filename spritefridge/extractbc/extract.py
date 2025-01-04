@@ -29,18 +29,20 @@ def regex_match(seq, bc_dict, laxity):
 
 
 def iterative_hash_match(seq, bc_dict, min_len, max_len):
+    match_name = ''
     for bc_len in range(min_len, max_len + 1):
         match = bc_dict.get(seq[:bc_len])
         if match:
+            match_name = match['name']
             break
 
-    return match['name'] if match else '', bc_len
+    return match_name, bc_len
 
 
 def extract_barcodes(read, bc_dicts, layout, laxity = 6):
     start = 0
     read_bcs = []
-    readseq = read['seq']
+    readseq = memoryview(read['seq'])
     # print(readseq)
     for bc_cat, min_bc_len, max_bc_len in layout:
         # this is a shortcut to avoid matching the full SPACER cat

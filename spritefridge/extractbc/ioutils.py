@@ -27,9 +27,9 @@ def count_valid_bcs(bcs):
 
 def open_fastq(filepath):
     handle = (
-        gzip.open(filepath, 'rt') 
+        gzip.open(filepath, 'rb') 
         if filepath.endswith('gz') 
-        else open(filepath, 'r')
+        else open(filepath, 'rb')
     )
     return handle
 
@@ -50,23 +50,22 @@ def get_read(fastq):
 
 
 def read_fastqs(fastq1_path, fastq2_path):
-    fastq1 = open_fastq(fastq1_path)
-    fastq2 = open_fastq(fastq2_path)
-    read1 = get_read(fastq1)
-    read2 = get_read(fastq2)
-    while read1 and read2:
-        yield read1, read2
-
+    with (
+        open_fastq(fastq1_path) as fastq1,
+        open_fastq(fastq2_path) as fastq2
+    ):
         read1 = get_read(fastq1)
         read2 = get_read(fastq2)
+        while read1 and read2:
+            yield read1, read2
 
-    fastq1.close()
-    fastq2.close()
+            read1 = get_read(fastq1)
+            read2 = get_read(fastq2)
 
 
 def compress_read(read):
-    string = '\n'.join([read[k] for k in READCONTENTS]) + '\n'
-    return gzip.compress(string.encode('utf-8'))
+    string = b'\n'.join([read[k] for k in READCONTENTS]) + b'\n'
+    return gzip.compress(string)
 
 
 def reads_to_byteblocks(reads):
@@ -84,9 +83,9 @@ def reads_to_byteblocks(reads):
             nbcs = len(bcs)
             stats = initialize_stats(nbcs)
 
-        bcs_string = '|'.join(bcs)
-        read1['name'] = read1['name'] + '[' + bcs_string
-        read2['name'] = read2['name'] + '[' + bcs_string
+        bcs_string = b'|'.join(bcs)
+        read1['name'] = read1['name'] + b'[' + bcs_string
+        read2['name'] = read2['name'] + b'[' + bcs_string
         if not all(bcs):
             stats['filtered'] += 1
             stats[count_valid_bcs(bcs)] += 1
@@ -144,9 +143,14 @@ def read_barcodes(barcodes_path, allowed_mismatches):
         max_bc_lengths[cat] = (bc_lens.min(), bc_lens.max())
         mismatches = allowed_mismatches[cat]
         bc_dict[cat] = {
-            bc.bcseq: {
-                'regex': regex.compile('(' + bc.bcseq + '){s<=' + str(mismatches) + '}'), 
-                'name': bc.bcname
+            bytes(bc.bcseq, 'utf-8'): {
+                'regex': regex.compile(
+                    b'(' + bytes(bc.bcseq, 'utf-8') + 
+                    b'){s<=' + 
+                    bytes(str(mismatches), 'utf-8') + 
+                    b'}'
+                ), 
+                'name': bytes(bc.bcname, 'utf-8')
             }
             for _, bc
             in cat_barcodes.iterrows()
