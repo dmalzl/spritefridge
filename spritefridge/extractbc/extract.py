@@ -3,19 +3,19 @@ import logging
 
 def hash_match(seq, bc_dict):
     match = bc_dict.get(seq)
-    return match['name'] if match else ''
+    return match['name'] if match else b''
 
 
 def find_match(seq, bc_dict):
-    match = None
+    match_name = b''
     for _, bcinfo in bc_dict.items():
         re = bcinfo['regex']
         m = re.match(seq)
         if m:
-            match = bcinfo
+            match_name = bcinfo['name']
             break
         
-    return match['name'] if match else ''
+    return match_name
 
 
 def regex_match(seq, bc_dict, laxity):
@@ -29,7 +29,7 @@ def regex_match(seq, bc_dict, laxity):
 
 
 def iterative_hash_match(seq, bc_dict, min_len, max_len):
-    match_name = ''
+    match_name = b''
     for bc_len in range(min_len, max_len + 1):
         match = bc_dict.get(seq[:bc_len])
         if match:

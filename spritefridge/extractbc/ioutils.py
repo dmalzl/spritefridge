@@ -44,6 +44,9 @@ def get_read(fastq):
     if not all(read.values()):
         return {}
 
+    # remove any unnecessary strings from spacer
+    read['spacer'] = read['spacer'][:1]
+
     # this is necessary to ensure the aligner does not strip the barcodes later
     read['name'] = read['name'].split(maxsplit = 1)[0]
     return read
