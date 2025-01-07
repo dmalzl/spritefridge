@@ -1,95 +1,57 @@
+import logging
+
 import pandas as pd
 import numpy as np
-import itertools as it
 
 from functools import partial
+from cooler._reduce import CoolerMerger, merge_breakpoints
 
 
-# all this could surely also be done by iterating over pixels
-# however this needs additional overhead as pixels selector does not respect bin ids
-# so one has to ensure that the pixel frames are aligned which is way easier with matrix
-
-
-def merge_pixels(coolers, rowlo, rowhi, collo, colhi, round_floats):
-    pixels = pd.DataFrame()
-    tmp_count_cols = ['count_x', 'count_y']
-    for size, cool in coolers.items():
-        selector = cool.matrix(balance = False, as_pixels = True)
-        tmp = selector[rowlo:rowhi, collo:colhi]
-        if tmp.empty:
-            continue
-
-        tmp['count'] = tmp['count'].astype(float)
-        tmp.loc[:, 'count'] = tmp['count'] * (2/size)
-
-        if pixels.empty:
-            pixels = tmp
-            continue
-        
-        pixels = pixels.merge(
-            tmp,
-            on = ['bin1_id', 'bin2_id'],
-            how = 'outer'
-        )
-        pixels['count'] = pixels[tmp_count_cols].sum(axis = 1)
-        pixels.drop(
-            columns = tmp_count_cols,
-            inplace = True
-        )
-    
-    # in case all pixel frames are empty
-    if pixels.empty:
-        return pixels
-
-    if round_floats:
-        pixels['float_count'] = pixels['count']
-        pixels.loc[:, 'count'] = pixels.float_count.round(0)
-
+def load_and_correct(cool, size, lo, hi):
+    selector = cool.pixels()
+    pixels = selector[lo: hi]
+    pixels['count'] *= (2/size)
     return pixels
 
 
-def get_nbins(coolers):
-    key = np.random.choice(list(coolers.keys()))
-    return coolers[key].info['nbins']
+class SpriteCoolerMerger(CoolerMerger):
+    def __init__(self, coolers, mergebuf):
+        super().__init__(list(coolers.values()), mergebuf)
+        self.coolers = coolers
 
+    def __iter__(self):
+        # Load bin1_offset indexes lazily.
+        indexes = [c.open("r")["indexes/bin1_offset"] for c in self.coolers.values()]
 
-def chunked_pixels_iterator(pixels_selector, coolers, nchunks = 100, round_floats = True):
-    chunkextents = np.linspace(
-        0, 
-        get_nbins(coolers), 
-        nchunks, 
-        dtype = int
-    )
-    for rowlo, rowhi in it.pairwise(chunkextents):
-        for collo, colhi in it.pairwise(chunkextents):
-            pixels = pixels_selector(
-                coolers,
-                rowlo, rowhi,
-                collo, colhi,
-                round_floats
+        # Calculate the common partition of bin1 offsets that define the epochs
+        # of merging data.
+        bin1_partition, cum_nrecords = merge_breakpoints(indexes, self.mergebuf)
+        nrecords_per_epoch = np.diff(cum_nrecords)
+        nnzs = [len(c.pixels()) for c in self.coolers.values()]
+
+        starts = [0] * len(self.coolers)
+        for i, bin1_id in enumerate(bin1_partition[1:], 2):
+            stops = [index[bin1_id] for index in indexes]
+            # extract, concat
+            combined = pd.concat(
+                [
+                    load_and_correct(c, size, start, stop)
+                    for (size, c), start, stop in zip(self.coolers.items(), starts, stops)
+                    if (stop - start) > 0
+                ],
+                axis=0,
+                ignore_index=True,
             )
-            if pixels.empty:
-                continue
 
-            yield pixels
+            # sort and aggregate
+            df = combined \
+                .groupby(["bin1_id", "bin2_id"], sort=True) \
+                .sum() \
+                .reset_index()
 
+            percent_merged = np.floor(i / len(bin1_partition) * 100)
+            if not percent_merged % 10:
+                logging.info(f'merged approximately {percent_merged} %')
 
-def pixels_from_matrix_block(cooler, rowlo, rowhi, collo, colhi, round_floats):
-    pixels = cooler.matrix(balance = False, as_pixels = True)[rowlo:rowhi, collo:colhi]
-
-    if round_floats:
-        pixels['float_count'] = pixels['count']
-        pixels.loc[:, 'count'] = pixels.float_count.round(0)
-
-    return pixels
-
-
-chunked_pixels_merge = partial(
-    chunked_pixels_iterator,
-    merge_pixels
-)
-
-chunked_pixels_block = partial(
-    chunked_pixels_iterator,
-    pixels_from_matrix_block
-)
+            yield {k: v.values for k, v in df.items()}
+            starts = stops

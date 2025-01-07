@@ -13,16 +13,16 @@ def add_combine(subparser):
         required = True
     )
     parser.add_argument(
-        '--nchunks',
-        help = 'the number of chunks to divide the data into when merging pixels. This is useful to finetune memory usage',
-        default = 10,
+        '--chunksize',
+        help = 'number of rows of the pixel frame to fetch for merging',
+        default = 1_000_000,
         type = int
     )
     parser.add_argument(
         '--floatcounts',
         help = 'if set stores count column as float, else stores them in a separate column count then contains rounded float counts',
-        action = 'store_true',
-        default = False
+        action = 'store_false',
+        default = True
     )
     parser.add_argument(
         '--outfile',

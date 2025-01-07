@@ -3,8 +3,8 @@ import logging
 import numpy as np
 
 from .ioutils import read_coolers
-from .core import chunked_pixels_merge
-from cooler import create_cooler
+from .core import SpriteCoolerMerger
+from cooler.create import create
 
 
 def main(args):
@@ -23,16 +23,17 @@ def main(args):
 
     key = np.random.choice(list(coolers.keys()))
     bins = coolers[key].bins()[:]
+    assembly = coolers[key].info.get("genome-assembly", None)
+    iterator = SpriteCoolerMerger(
+        coolers, 
+        mergebuf = args.chunksize
+    )
 
-    create_cooler(
+    create(
         args.outfile,
         bins,
-        chunked_pixels_merge(
-            coolers, 
-            args.nchunks, 
-            not args.floatcounts
-        ),
-        columns = columns,
-        dtypes = dtypes,
-        ordered = False
+        iterator,
+        columns=columns,
+        dtypes=dtypes,
+        assembly=assembly
     )
