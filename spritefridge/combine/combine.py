@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-from .ioutils import read_coolers
+from .ioutils import read_coolers, check_file_limit
 from .core import SpriteCoolerMerger
 from cooler.create import create
 
@@ -10,6 +10,7 @@ from cooler.create import create
 def main(args):
     logging.info('reading coolers')
     coolers = read_coolers(args.input)
+    check_file_limit(len(coolers))
     logging.info('merging coolers')
     if not args.floatcounts:
         columns = ['count', 'float_count']
