@@ -9,7 +9,7 @@ from .core import annotate_bins
 def annotate_cool(coolpath, bedpaths, outprefix):
     cooler = Cooler(coolpath)
 
-    annotated_bins = cooler.bins()[:]
+    annotated_bins = cooler.bins()[:].loc[:, ['chrom', 'start', 'end']]
     for bedpath in bedpaths:
         logging.info(f'annotating bins of {coolpath} with clusters from {bedpath}')
         tmp = annotate_bins(cooler, bedpath)
