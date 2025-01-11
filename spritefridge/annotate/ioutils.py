@@ -48,7 +48,7 @@ def read_bed_by_chrom(bedfile):
                 current_chrom = line[0]
             
             if current_chrom != line[0]:
-                logging.info(f'processing {current_chrom}')
+                logging.info(f'processed {current_chrom}')
                 chrom_data = pd.DataFrame(
                     linebuffer,
                     columns = ['chrom', 'start', 'end', 'name']
@@ -59,6 +59,13 @@ def read_bed_by_chrom(bedfile):
                 continue
 
             linebuffer.append(line)
+        
+        logging.info(f'processed {current_chrom}')
+        chrom_data = pd.DataFrame(
+            linebuffer,
+            columns = ['chrom', 'start', 'end', 'name']
+        )
+        yield chrom_data
 
 
 def get_h5_group(h5, key_sequence):

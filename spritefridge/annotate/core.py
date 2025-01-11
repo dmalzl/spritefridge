@@ -8,7 +8,6 @@ import logging
 
 
 def annotate_bins(cool, clusterbedfile):
-    logging.info(f'annotating from {clusterbedfile}')
     cool_chroms = set(cool.chromnames)
     annotated_bins = []
     for chrom_bed in read_bed_by_chrom(clusterbedfile):
