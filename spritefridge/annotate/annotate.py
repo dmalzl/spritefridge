@@ -4,19 +4,15 @@ import pandas as pd
 
 from cooler import Cooler, fileops
 from .core import annotate_bins
-from .ioutils import copy_and_annotate_cooler, copy_attrs
 
 
-def annotate_cool(coolpath, bedpaths, outfile, mcoolfile = False):
+def annotate_cool(coolpath, bedpaths, outprefix):
     cooler = Cooler(coolpath)
 
-    annotated_bins = pd.DataFrame()
+    annotated_bins = cooler.bins()[:]
     for bedpath in bedpaths:
         logging.info(f'annotating bins of {coolpath} with clusters from {bedpath}')
         tmp = annotate_bins(cooler, bedpath)
-        if annotated_bins.empty:
-            annotated_bins = tmp
-            continue
 
         annotated_bins = annotated_bins.merge(
             tmp,
@@ -24,41 +20,31 @@ def annotate_cool(coolpath, bedpaths, outfile, mcoolfile = False):
             how = 'left'
         )
 
-    annotated_bins.drop(
-        columns = ['chrom', 'start', 'end'],
-        inplace = True
-    )
+    outfile = outprefix + '.tsv.gz'
     logging.info(f'writing annotated data to {outfile}')
-    copy_and_annotate_cooler(
-        coolpath,
+    annotated_bins.to_csv(
         outfile,
-        annotated_bins,
-        mcoolfile = mcoolfile
+        sep = '\t',
+        index = False,
+        compression = 'gzip'
     )
 
 
-def annotate_mcool(mcoolpath, bedpaths, outfile):
+def annotate_mcool(mcoolpath, bedpaths, outprefix):
     for coolpath in fileops.list_coolers(mcoolpath):
         uri = mcoolpath + '::' + coolpath
-        outuri = outfile + '::' + coolpath
         annotate_cool(
             uri,
             bedpaths,
-            outuri,
-            mcoolfile = True
+            outprefix + coolpath.replace('/', '_')
         )
-    
-    copy_attrs(mcoolpath, outfile)
 
 
 def main(args):
-    for coolpath in args.input:
-        if fileops.is_multires_file(coolpath):
-            logging.info('annotating multires cooler')
-            outfile = coolpath.replace('mcool', 'annotated.mcool')
-            annotate_mcool(coolpath, args.bed, outfile)
+    if fileops.is_multires_file(args.input):
+        logging.info('annotating multires cooler')
+        annotate_mcool(args.input, args.bed, args.outprefix)
 
-        else:
-            logging.info('annotating single cooler')
-            outfile = coolpath.replace('.cool', '.annotated.cool')
-            annotate_cool(coolpath, args.bed, outfile)
+    else:
+        logging.info('annotating single cooler')
+        annotate_cool(args.input, args.bed, args.outprefix)

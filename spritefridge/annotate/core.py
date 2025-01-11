@@ -4,14 +4,11 @@ from .ioutils import read_bed_by_chrom
 import pandas as pd
 
 import os
-
-
-def sanitize_dtypes(df, dtypes):
-    for col, dtype in dtypes.items():
-        df[col] = df[col].astype(dtype)
+import logging
 
 
 def annotate_bins(cool, clusterbedfile):
+    logging.info(f'annotating from {clusterbedfile}')
     cool_chroms = set(cool.chromnames)
     annotated_bins = []
     for chrom_bed in read_bed_by_chrom(clusterbedfile):
@@ -30,24 +27,10 @@ def annotate_bins(cool, clusterbedfile):
             grouped.agg({'thickEnd': ','.join}).reset_index()
         )
     
-    tmp_annotation = pd.concat(annotated_bins)
+    annotation = pd.concat(annotated_bins, ignore_index = True)
     colname = os.path.basename(clusterbedfile)
-    tmp_annotation.rename(
+    annotation.rename(
         columns = {'thickEnd': colname},
         inplace = True
     )
-    bins = cool.bins()[:].loc[:, ['chrom', 'start', 'end']]
-    annotated_bins = bins.merge(
-        tmp_annotation, 
-        on = ['chrom', 'start', 'end'], 
-        how = 'left'
-    )
-    annotated_bins.fillna({colname: 'None'}, inplace = True)
-    sanitize_dtypes(
-        annotated_bins,
-        {
-            'chrom': 'category',
-            colname: 'bytes'
-        }
-    )
-    return annotated_bins
+    return annotation

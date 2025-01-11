@@ -1,6 +1,7 @@
 from cooler import fileops, create
 
 import h5py
+import logging
 
 import pandas as pd
 
@@ -47,6 +48,7 @@ def read_bed_by_chrom(bedfile):
                 current_chrom = line[0]
             
             if current_chrom != line[0]:
+                logging.info(f'processing {current_chrom}')
                 chrom_data = pd.DataFrame(
                     linebuffer,
                     columns = ['chrom', 'start', 'end', 'name']

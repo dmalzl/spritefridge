@@ -9,8 +9,7 @@ def add_annotate(subparser):
     parser.add_argument(
         '--input',
         '-i',
-        nargs = '+',
-        help = 'one or more coolers (possibly mcool) to annotate with respective clusterinfo',
+        help = 'cooler (possibly mcool) to annotate with respective clusterinfo',
         required = True
     )
     parser.add_argument(
@@ -22,5 +21,11 @@ def add_annotate(subparser):
         must be sorted by chrom, start. annotation columns will be named after bed basenames
         ''',
         required = True
+    )
+    parser.add_argument(
+        '--outprefix',
+        '-o',
+        required = True,
+        help = 'file prefix to use for writing resulting annotation'
     )
     
