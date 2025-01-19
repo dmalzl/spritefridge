@@ -42,7 +42,7 @@ def process_sequential(
         if not stats:
             stats = initialize_stats(len(bcs))
 
-        bcs_string = '|'.join(bcs)
+        bcs_string = b'|'.join(bcs)
         read1['name'] = read1['name'] + bcs_string
         read2['name'] = read2['name'] + bcs_string
         read_buffer.append(
