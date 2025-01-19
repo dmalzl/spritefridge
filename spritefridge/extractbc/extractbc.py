@@ -33,7 +33,8 @@ def main(args):
         filtered_r1 = fileprefix + '.filtered.fq.gz' if args.writefiltered else None,
         r2 = fileprefix + '.r2.fq.gz' if args.writer2 else None,
         filtered_r2 = fileprefix + '.filtered_r2.fq.gz' if args.writer2 and args.writefiltered else None,
-        stats = fileprefix + '.stats.tsv'
+        overall_stats = fileprefix + '.overall.stats.tsv',
+        poswise_stats = fileprefix + '.poswise.stats.tsv'
     )
 
     if args.processes > 1:

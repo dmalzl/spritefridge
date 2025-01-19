@@ -16,13 +16,8 @@ def initialize_stats(nbcs):
         'filtered': 0,
         **{i: 0 for i in range(nbcs + 1)}
     }
+    stats['poswise'] = [0] * nbcs
     return stats
-
-
-def count_valid_bcs(bcs):
-    # python sourcery for quick summing
-    # implicitly converts string to bool
-    return sum(bool(bc) for bc in bcs)
 
 
 def open_fastq(filepath):
@@ -71,6 +66,18 @@ def compress_read(read):
     return gzip.compress(string)
 
 
+def increment_poswise_counter(read_bcs, stats):
+    n_valid = 0
+    for i, bc in enumerate(read_bcs):
+        if not bc:
+            continue
+        
+        n_valid += 1
+        stats['poswise'][i] += 1
+
+    return n_valid
+    
+
 def reads_to_byteblocks(reads):
     stats = {}
     bytestreams = dict(
@@ -86,12 +93,13 @@ def reads_to_byteblocks(reads):
             nbcs = len(bcs)
             stats = initialize_stats(nbcs)
 
+        n_valid_bcs = increment_poswise_counter(bcs, stats)
         bcs_string = b'|'.join(bcs)
         read1['name'] = read1['name'] + b'[' + bcs_string
         read2['name'] = read2['name'] + b'[' + bcs_string
         if not all(bcs):
             stats['filtered'] += 1
-            stats[count_valid_bcs(bcs)] += 1
+            stats[n_valid_bcs] += 1
             bytestreams['filtered_r1'].write(
                 compress_read(read1)
             )
@@ -162,17 +170,52 @@ def read_barcodes(barcodes_path, allowed_mismatches):
     return bc_dict, max_bc_lengths
 
 
-def write_stats(stats_dict, statsfile):
+def write_overall_stats(stats_dict, statsfile):
     with open(statsfile, 'w') as file:
         for i, count in stats_dict.items():
+            if i == 'poswise':
+                continue
+
             file.write(f'{i}_barcodes\t{count}' + '\n')
+
+
+def write_poswise_stats(poswise_counts, bc_cats, n_reads, statsfile):
+    with open(statsfile, 'w') as file:
+        header = '\t'.join(
+            [
+                f'{bc_cat}_{i}' 
+                for bc_cat, i 
+                in enumerate(bc_cats)
+            ]
+        )
+        file.write(header + '\n')
+        data = '\t'.join(
+            [
+                '{:.2f}'.format(c/n_reads * 100) 
+                for c 
+                in poswise_counts
+            ]
+        )
+        file.write(data + '\n')
+
+
+def sum_stats(stats, blockstats):
+    for k, v in blockstats.items():
+        if k == 'poswise':
+            continue
+        
+        stats[k] += v
+
+    for i, count in blockstats['poswise']:
+        stats['poswise'][i] += count
 
 
 def write_parallel(
     outfilepaths,
     input_queue,
     lock,
-    nextractors
+    nextractors,
+    bc_cats
 ):
     logging.info('starting writer process')
     stats = {}
@@ -191,8 +234,7 @@ def write_parallel(
         if not stats:
             stats = {k: 0 for k in blockstats.keys()}
 
-        for k, v in blockstats.items():
-            stats[k] += v
+        sum_stats(stats, blockstats)
 
         # currently this is not necessary since we only use one writerthread
         # but we leave here for the future probably
@@ -206,7 +248,14 @@ def write_parallel(
             logging.info(f'processed {reads_processed} reads')
 
     logging.info('all reads processed, shutting down writer')
-    write_stats(stats, outfilepaths['stats'])
+    n_reads = stats['valid'] + stats['filtered']
+    write_overall_stats(stats, outfilepaths['overall_stats'])
+    write_poswise_stats(
+        stats['poswise'], 
+        bc_cats, 
+        n_reads, 
+        outfilepaths['poswise_stats']
+    )
 
 
 def initialize_output(outfilepaths):

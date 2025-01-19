@@ -7,9 +7,11 @@ from .ioutils import (
     read_fastqs, 
     write_fastq,
     write_parallel,
-    write_stats,
+    write_overall_stats,
+    write_poswise_stats,
     initialize_stats,
-    initialize_output
+    initialize_output,
+    sum_stats
 )
 
 import multiprocessing as mp
@@ -52,8 +54,7 @@ def process_sequential(
                 read_buffer,
                 outfilepaths
             )
-            for k, v in blockstats.items():
-                stats[k] += v
+            sum_stats(stats, blockstats)
 
             read_buffer = []
 
@@ -66,10 +67,17 @@ def process_sequential(
         read_buffer,
         outfilepaths
     )
-    for k, v in blockstats.items():
-        stats[k] += v
+    sum_stats(stats, blockstats)
 
-    write_stats(stats, outfilepaths['stats'])
+    bc_cats = [c for c in layout_r1 + layout_r2 if c != 'SPACER']
+    n_reads = stats['valid'] + stats['filtered']
+    write_overall_stats(stats, outfilepaths['overall_stats'])
+    write_poswise_stats(
+        stats['poswise'], 
+        bc_cats, 
+        n_reads, 
+        outfilepaths['poswise_stats']
+    )
 
 
 def process_parallel(
@@ -104,14 +112,15 @@ def process_parallel(
         )
         for _ in range(max(nprocesses - 2, 1))
     ]
-
+    bc_cats = [c for c in layout_r1 + layout_r2 if c != 'SPACER']
     writer = mp.Process(
         target = write_parallel,
         args = (
             outfilepaths,
             write_queue,
             lock,
-            len(extractors)
+            len(extractors),
+            bc_cats
         )
     )
 
