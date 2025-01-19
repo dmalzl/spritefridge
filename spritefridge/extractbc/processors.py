@@ -69,7 +69,7 @@ def process_sequential(
     )
     sum_stats(stats, blockstats)
 
-    bc_cats = [c for c in layout_r1 + layout_r2 if c != 'SPACER']
+    bc_cats = [c[0] for c in layout_r1 + layout_r2 if c[0] != 'SPACER']
     n_reads = stats['valid'] + stats['filtered']
     write_overall_stats(stats, outfilepaths['overall_stats'])
     write_poswise_stats(
@@ -112,7 +112,7 @@ def process_parallel(
         )
         for _ in range(max(nprocesses - 2, 1))
     ]
-    bc_cats = [c for c in layout_r1 + layout_r2 if c != 'SPACER']
+    bc_cats = [c[0] for c in layout_r1 + layout_r2 if c[0] != 'SPACER']
     writer = mp.Process(
         target = write_parallel,
         args = (

@@ -200,6 +200,9 @@ def write_poswise_stats(poswise_counts, bc_cats, n_reads, statsfile):
 
 
 def sum_stats(stats, blockstats):
+    if not blockstats:
+        return
+    
     for k, v in blockstats.items():
         if k == 'poswise':
             continue
