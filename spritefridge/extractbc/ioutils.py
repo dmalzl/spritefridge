@@ -206,8 +206,20 @@ def sum_stats(stats, blockstats):
         
         stats[k] += v
 
-    for i, count in blockstats['poswise']:
+    for i, count in enumerate(blockstats['poswise']):
         stats['poswise'][i] += count
+
+
+def initialize_stats_from_blockstats(blockstats):
+    stats = {}
+    for k, v in blockstats.items():
+        if k == 'poswise':
+            stats[k] = [0] * len(v)
+            continue
+
+        stats[k] = 0
+
+    return stats
 
 
 def write_parallel(
@@ -232,7 +244,7 @@ def write_parallel(
         byteblocks, blockstats = reads_to_byteblocks(reads)
 
         if not stats:
-            stats = {k: 0 for k in blockstats.keys()}
+            stats = initialize_stats_from_blockstats(blockstats)
 
         sum_stats(stats, blockstats)
 
