@@ -24,7 +24,7 @@ def regex_match(seq, bc_dict, laxity):
 
 
 def hash_match(seq, bc_dict, min_len, max_len):
-    # if there we only deal with one length we skip the loop
+    # if we only deal with one length we skip the loop
     if min_len == max_len:
         match = bc_dict.get(seq)
         return match['name'] if match else b'', max_len
