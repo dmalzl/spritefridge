@@ -1,11 +1,23 @@
+import re
+
 import pysam as ps
 import itertools as it
 
 from collections import defaultdict, namedtuple
 
 Position = namedtuple('Position', ['chrom', 'start', 'end', 'strand'])
-def read_to_pos(read, sep):
-    bc_string = read.query_name.split(sep)[-1]
+def read_to_pos(read, sep, ignore_regex):
+    bcs = read.query_name.split(sep)[-1]
+    if not ignore_regex:
+        bc_string = bcs
+
+    else:
+        # make use of list comp because faster
+        bc_string = '|'.join(
+            bc for bc in bcs.split('|') 
+            if not any(r.match(bc) for r in ignore_regex)
+        )
+
     pos = Position(
         chrom = read.reference_name, 
         start = read.reference_start,
@@ -15,11 +27,17 @@ def read_to_pos(read, sep):
     return bc_string, pos
 
 
-def read_bam(bamfile, bcsep):
-    with ps.AlignmentFile(bamfile, 'rb') as bam:
-        # until_eof relies on filtering unmapped reads beforehand
-        for read in bam.fetch(until_eof = True):
-            yield read_to_pos(read, bcsep)
+def parse_ignore_prefixes(prefixstring):
+    return [re.compile(f'^{prefix}') for prefix in prefixstring.split(',')]
+
+
+def read_bam(bamfiles, bcsep, ignore_prefixes):
+    ignore_regex = parse_ignore_prefixes(ignore_prefixes) if ignore_prefixes else []
+    for bamfile in bamfiles:
+        with ps.AlignmentFile(bamfile, 'rb') as bam:
+            # until_eof relies on filtering unmapped reads beforehand
+            for read in bam.fetch(until_eof = True):
+                yield read_to_pos(read, bcsep, ignore_regex)
 
 
 def clusters_by_size(clusters):
@@ -101,4 +119,3 @@ def write_stats(stats, filename):
             file.write(
                 f'{size}\t{num}\n'
             )
-            

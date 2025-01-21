@@ -3,7 +3,8 @@ import logging
 from .ioutils import (
     read_bam,
     clusters_to_pairs,
-    write_stats
+    write_stats,
+    parse_ignore_prefixes
 )
 from collections import defaultdict
 
@@ -12,7 +13,7 @@ def main(args):
     clusters = defaultdict(set)
     logging.info('reading alignments and constructing clusters')
     alignments_processed, duplicate_alignments = 0, 0
-    for bcs, pos in read_bam(args.bam, args.separator):
+    for bcs, pos in read_bam(args.bams, args.separator, args.ignore_prefix):
         if pos in clusters[bcs]:
             duplicate_alignments += 1
         

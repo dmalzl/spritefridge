@@ -7,10 +7,10 @@ def add_pairs(subparser):
         '''
     )
     parser.add_argument(
-        '--bam',
+        '--bams',
         '-b',
-        help = 'BAM file containing aligned SPRITE-seq data',
-        required = True
+        help = 'one or more BAM files containing aligned SPRITE-seq data',
+        nargs = '+'
     )
     parser.add_argument(
         '--outprefix',
@@ -37,5 +37,9 @@ def add_pairs(subparser):
         '-s',
         help = 'separator to use for extracting the barcode sequence from the readname',
         default = '['
+    )
+    parser.add_argument(
+        '-ignoreprefix',
+        help = 'prefixes of barcodes to ignore for building clusters in the form of a comma-separated list. e.g. <prefix1>,<prefix2>,...'
     )
     
