@@ -1,11 +1,6 @@
 import logging
 
 
-def hash_match(seq, bc_dict):
-    match = bc_dict.get(seq)
-    return match['name'] if match else b''
-
-
 def find_match(seq, bc_dict):
     match_name = b''
     for _, bcinfo in bc_dict.items():
@@ -28,7 +23,7 @@ def regex_match(seq, bc_dict, laxity):
     return match, match_start
 
 
-def iterative_hash_match(seq, bc_dict, min_len, max_len):
+def hash_match(seq, bc_dict, min_len, max_len):
     match_name = b''
     for bc_len in range(min_len, max_len + 1):
         match = bc_dict.get(seq[:bc_len])
@@ -44,7 +39,7 @@ def extract_barcodes(read, bc_dicts, layout, laxity = 6):
     read_bcs = []
     readseq = memoryview(read['seq'])
     # print(readseq)
-    for bc_cat, min_bc_len, max_bc_len in layout:
+    for bc_cat, min_bc_len, max_bc_len, allowed_mismatches in layout:
         # this is a shortcut to avoid matching the full SPACER cat
         if bc_cat.startswith('S'):
             # print(bc_cat, start, start + max_bc_len)
@@ -52,9 +47,8 @@ def extract_barcodes(read, bc_dicts, layout, laxity = 6):
             start += max_bc_len
             continue
 
-        # this is a quirk of the experiment for which I did not find a generic solution
-        if bc_cat == 'Y':
-            bc_match, match_len = iterative_hash_match(
+        if not allowed_mismatches:
+            bc_match, match_len = hash_match(
                 readseq[start: start + max_bc_len],
                 bc_dicts[bc_cat],
                 min_bc_len,
@@ -64,18 +58,6 @@ def extract_barcodes(read, bc_dicts, layout, laxity = 6):
             # print(' '* start + readseq[start: start + match_len])
             read_bcs.append(bc_match)
             start += match_len
-            continue
-        
-        # same as for SPACER
-        if bc_cat.startswith('D'):
-            bc_match = hash_match(
-                readseq[start: start + max_bc_len],
-                bc_dicts[bc_cat]
-            )
-            # print(bc_cat, start, start + max_bc_len)
-            # print(' '* start + readseq[start: start + max_bc_len])
-            read_bcs.append(bc_match)
-            start += max_bc_len
             continue
         
         bc_match, match_pos = regex_match(
