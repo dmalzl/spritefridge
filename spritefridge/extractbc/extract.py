@@ -24,6 +24,11 @@ def regex_match(seq, bc_dict, laxity):
 
 
 def hash_match(seq, bc_dict, min_len, max_len):
+    # if there we only deal with one length we spare the loop
+    if min_len == max_len:
+        match = bc_dict.get(seq)
+        return match['name'] if match else b'', max_len
+
     match_name = b''
     for bc_len in range(min_len, max_len + 1):
         match = bc_dict.get(seq[:bc_len])
