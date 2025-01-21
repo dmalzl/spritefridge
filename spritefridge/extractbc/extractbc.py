@@ -24,8 +24,8 @@ def main(args):
     # add spacer info so we don't have to explicitly care about it
     add_spacer_info(minmax_bc_len, args.spacerlen)
 
-    layout_r1 = parse_layout(args.layout1, minmax_bc_len)
-    layout_r2 = parse_layout(args.layout2, minmax_bc_len)
+    layout_r1 = parse_layout(args.layout1, minmax_bc_len, allowed_mismatches)
+    layout_r2 = parse_layout(args.layout2, minmax_bc_len, allowed_mismatches)
 
     fileprefix = generate_fileprefix(args.output)
     outfilepaths = dict(
