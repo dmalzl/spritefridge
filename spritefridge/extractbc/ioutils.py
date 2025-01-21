@@ -288,7 +288,9 @@ def parse_layout(layout_string, minmax_bc_len, allowed_mismatches):
                 bc_cat,
                 min_len,
                 max_len,
-                allowed_mismatches[bc_cat]
+                # this will return None in case of unknown categories
+                # in case of e.g. SPACER this is okay since we anyway skip it
+                allowed_mismatches.get(bc_cat) 
             ]
         )
     
