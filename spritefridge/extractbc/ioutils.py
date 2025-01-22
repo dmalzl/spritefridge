@@ -281,6 +281,10 @@ def initialize_output(outfilepaths):
 
 def parse_layout(layout_string, minmax_bc_len, allowed_mismatches):
     layout = []
+
+    if not layout_string:
+        return layout
+    
     for bc_cat in layout_string.split('|'):
         min_len, max_len = minmax_bc_len[bc_cat]
         layout.append(

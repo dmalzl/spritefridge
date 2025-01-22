@@ -31,7 +31,7 @@ spritefridge extractbc \
     -p 4
 ```
 This command will read in the barcodes and the try to find barcodes in the respective read sequence in the order given by the layouts starting from 5' end.
-`-m` gives the allowed mismatches for the barcode identification. In addition to `out.bcextract.fq.gz` which contains reads with the extracted barcodes appended to their names, the tool also outputs statistics for how many reads were found with 1, 2, 3, ... barcodes. `-p` specifies the number of processes to use for extraction.
+`-m` gives the allowed mismatches for the barcode identification. In addition to `out.bcextract.fq.gz` which contains reads with the extracted barcodes appended to their names, the tool also outputs statistics for how many reads were found with 1, 2, 3, ... barcodes. `-p` specifies the number of processes to use for extraction. `-l1` and `-l2` can also be left empty if barcodes are only to be extracted from one read.
 
 ### pairs
 `pairs` identifies barcode clusters from aligned reads and writes them into pairs files for each cluster size
@@ -43,7 +43,7 @@ spritefridge pairs \
     -ch 1000 \
     --separator '['
 ```
-This command will read in alignments from `in.bam` (needs to be filtered for multimappers and quality) groups the reads by barcodes and then writes all possible pairs for each cluster of sizes between 2 and 1000 reads to a file named `pairs/out_<clustersize>.pairs`. This tool also outputs a dedicated bedfile containing all reads from each cluster to be used to annotated the Cooler bins later on (see `annotate`)
+This command will read in alignments from `in.bam` (needs to be filtered for multimappers and quality) groups the reads by barcodes and then writes all possible pairs for each cluster of sizes between 2 and 1000 reads to a file named `pairs/out_<clustersize>.pairs`. This tool also outputs a dedicated bedfile containing all reads from each cluster to be used to annotated the Cooler bins later on (see `annotate`). Additionally, one can specify the a list of barcode name prefixes to ignore when generating the clusters via `--ignoreprefix` e.g. when having RPM and DPM sequences present which should really be in the same cluster (`--ignoreprefix "RPM,DPM"`)
 
 ### combine
 `combine` merges cool files generated from cluster pairs files according to the SPRITE-seq recommendation by multiplying the counts of each Cooler by 2/n,

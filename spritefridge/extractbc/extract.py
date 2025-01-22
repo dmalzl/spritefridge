@@ -42,6 +42,10 @@ def hash_match(seq, bc_dict, min_len, max_len):
 def extract_barcodes(read, bc_dicts, layout, laxity = 6):
     start = 0
     read_bcs = []
+
+    if not layout:
+        return read_bcs
+
     readseq = memoryview(read['seq'])
     # print(readseq)
     for bc_cat, min_bc_len, max_bc_len, allowed_mismatches in layout:

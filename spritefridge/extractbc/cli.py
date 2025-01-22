@@ -28,13 +28,13 @@ def add_extractbc(subparsers):
         '--layout1',
         '-l1',
         help = 'barcode layout for read1 of the form category1|category2|...',
-        required = True
+        default = ''
     )
     parser.add_argument(
         '--layout2',
         '-l2',
         help = 'barcode layout for read2 of the form category1|category2|...',
-        required = True
+        default = ''
     )
     parser.add_argument(
         '--spacerlen',
