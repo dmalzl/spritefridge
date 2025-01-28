@@ -1,26 +1,5 @@
 import logging
-
-
-def find_match(seq, bc_dict):
-    match_name = b''
-    for _, bcinfo in bc_dict.items():
-        re = bcinfo['regex']
-        m = re.match(seq)
-        if m:
-            match_name = bcinfo['name']
-            break
-        
-    return match_name
-
-
-def regex_match(seq, bc_dict, laxity):
-    match = None
-    for match_start in range(laxity):
-        match = find_match(seq[match_start:], bc_dict)
-        if match:
-            break
-
-    return match, match_start
+from match import match_with_errors
 
 
 def hash_match(seq, bc_dict, min_len, max_len):
@@ -69,8 +48,8 @@ def extract_barcodes(read, bc_dicts, layout, laxity = 6):
             start += match_len
             continue
         
-        bc_match, match_pos = regex_match(
-            readseq[start: start + max_bc_len + laxity],
+        bc_match, match_pos = match_with_errors(
+            readseq[start: start + max_bc_len + laxity].tobytes(),
             bc_dicts[bc_cat],
             laxity
         )

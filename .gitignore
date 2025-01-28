@@ -3,3 +3,4 @@ build/
 testdata/
 *egg*
 *token
+*.c

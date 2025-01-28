@@ -1,5 +1,4 @@
 import gzip
-import regex
 import logging
 
 import pandas as pd
@@ -155,13 +154,8 @@ def read_barcodes(barcodes_path, allowed_mismatches):
         mismatches = allowed_mismatches[cat]
         bc_dict[cat] = {
             bytes(bc.bcseq, 'utf-8'): {
-                'regex': regex.compile(
-                    b'(' + bytes(bc.bcseq, 'utf-8') + 
-                    b'){s<=' + 
-                    bytes(str(mismatches), 'utf-8') + 
-                    b'}'
-                ), 
-                'name': bytes(bc.bcname, 'utf-8')
+                'name': bytes(bc.bcname, 'utf-8'),
+                'mismatch': mismatches
             }
             for _, bc
             in cat_barcodes.iterrows()
