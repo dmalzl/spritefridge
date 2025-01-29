@@ -230,15 +230,13 @@ def write_parallel(
     stats = {}
     reads_processed = 0
     while True:
-        reads = input_queue.get()
-        if not reads:
+        byteblocks, blockstats, n_reads = input_queue.get()
+        reads_processed += n_reads
+        if not byteblocks:
             nextractors -= 1
 
         if not nextractors:
             break
-        
-        reads_processed += len(reads)
-        byteblocks, blockstats = reads_to_byteblocks(reads)
 
         if not stats:
             stats = initialize_stats_from_blockstats(blockstats)
@@ -246,14 +244,14 @@ def write_parallel(
         sum_stats(stats, blockstats)
 
         # currently this is not necessary since we only use one writerthread
-        # but we leave here for the future probably
+        # but we leave it here for the future probably
         with lock:
             write_byteblocks(
                 byteblocks,
                 outfilepaths
             )
         
-        if reads and not reads_processed % 1e5:
+        if byteblocks and not reads_processed % 1e5:
             logging.info(f'processed {reads_processed} reads')
 
     logging.info('all reads processed, shutting down writer')

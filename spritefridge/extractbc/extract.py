@@ -1,5 +1,6 @@
 import logging
 from match import match_with_errors
+from .ioutils import reads_to_byteblocks
 
 
 def hash_match(seq, bc_dict, min_len, max_len):
@@ -74,6 +75,8 @@ def extract_parallel(
         reads = input_queue.get()
         if not reads:
             break
+
+        n_reads = len(reads)
         
         for readpair in reads:
             read1, read2 = readpair
@@ -82,8 +85,9 @@ def extract_parallel(
                 extract_barcodes(read2, bc_dicts, layout2, laxity)
             )
 
-        output_queue.put(reads)
+        byteblocks, blockstats = reads_to_byteblocks(reads)
+        output_queue.put([byteblocks, blockstats, n_reads])
 
     # termination signal
     logging.info('received empty readlist, shutting down extractor')
-    output_queue.put([])
+    output_queue.put([{}, {}, 0])
