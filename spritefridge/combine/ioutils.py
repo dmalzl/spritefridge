@@ -9,7 +9,7 @@ import pandas as pd
 from cooler import Cooler
 
 
-cs_regex = re.compile('_(?P<cs>[0-9]+)_')
+cs_regex = re.compile('_(?P<cs>[0-9]+)_base')
 
 
 def check_file_limit(n_files):
