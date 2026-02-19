@@ -19,8 +19,11 @@ def main(args):
         outuri = args.output + '::' + coolpath
         fileops.cp(cooleruri, outuri)
 
+        # cannot name KR KR because it is reserved for juicer KR in cooler etc.
+        # however hicexplorer KR is multiplicative and would yield nonsense values
+        # see https://github.com/deeptools/Knight-Ruiz-Matrix-balancing-algorithm/issues/26
         for weight_name, per_chrom, balancefunc in zip(
-            ['KR', 'perChromKR', 'ICE', 'perChromIC'],
+            ['KRweights', 'perChromKR', 'ICE', 'perChromIC'],
             [False, True, False, True],
             [balance_kr, balance_kr, balance_ic, balance_ic]
         ):

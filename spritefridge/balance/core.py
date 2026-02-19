@@ -47,10 +47,8 @@ def balance_kr(cooleruri, per_chrom = False, **kwargs):
         )
         kr.computeKR()
 
-        # set it to False since the vector is already normalised
-        # with the previous True
-        # correction_factors = np.true_divide(1, kr.get_normalisation_vector(False).todense())
-        w = kr.get_normalisation_vector(False).todense()
+        # rescale vector to avoid numerical issues
+        w = kr.get_normalisation_vector(True).todense()
 
         # flatten weights to comply with cooler format specification
         return np.array(w).flatten()
